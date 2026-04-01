@@ -2,32 +2,33 @@ const musicContainer = document.getElementById('music-container');
 const playBtn = document.getElementById('play');
 const prevBtn = document.getElementById('prev');
 const nextBtn = document.getElementById('next');
-
 const audio = document.getElementById('audio');
 const progress = document.getElementById('progress');
 const progressContainer = document.getElementById('progress-container');
 const title = document.getElementById('title');
 const cover = document.getElementById('cover');
-const currTime = document.querySelector('#currTime');
-const durTime = document.querySelector('#durTime');
+const fileInput = document.getElementById('file-input');
 
-const songs = ['hey', 'summer', 'ukulele'];
+let songs = [];
+let songIndex = 0;
 
-let songIndex = 2;
-
-loadSong(songs[songIndex]);
+fileInput.addEventListener('change', () => {
+  songs = Array.from(fileInput.files);
+  songIndex = 0;
+  loadSong(songs[songIndex]);
+  playSong();
+});
 
 function loadSong(song) {
-  title.innerText = song;
-  audio.src = `music/${song}.mp3`;
-  cover.src = `images/${song}.jpg`;
+  title.innerText = song.name.replace('.mp3', '');
+  audio.src = URL.createObjectURL(song);
 }
 
 function playSong() {
+  if (songs.length === 0) return;
   musicContainer.classList.add('play');
   playBtn.querySelector('i.fas').classList.remove('fa-play');
   playBtn.querySelector('i.fas').classList.add('fa-pause');
-
   audio.play();
 }
 
@@ -35,32 +36,22 @@ function pauseSong() {
   musicContainer.classList.remove('play');
   playBtn.querySelector('i.fas').classList.add('fa-play');
   playBtn.querySelector('i.fas').classList.remove('fa-pause');
-
   audio.pause();
 }
 
 function prevSong() {
+  if (songs.length === 0) return;
   songIndex--;
-
-  if (songIndex < 0) {
-    songIndex = songs.length - 1;
-  }
-
+  if (songIndex < 0) songIndex = songs.length - 1;
   loadSong(songs[songIndex]);
-
   playSong();
 }
 
-// Next song
 function nextSong() {
+  if (songs.length === 0) return;
   songIndex++;
-
-  if (songIndex > songs.length - 1) {
-    songIndex = 0;
-  }
-
+  if (songIndex > songs.length - 1) songIndex = 0;
   loadSong(songs[songIndex]);
-
   playSong();
 }
 
@@ -73,15 +64,12 @@ function updateProgress(e) {
 function setProgress(e) {
   const width = this.clientWidth;
   const clickX = e.offsetX;
-  const duration = audio.duration;
-
-  audio.currentTime = (clickX / width) * duration;
+  audio.currentTime = (clickX / width) * audio.duration;
 }
 
-
 playBtn.addEventListener('click', () => {
+  if (songs.length === 0) return;
   const isPlaying = musicContainer.classList.contains('play');
-
   if (isPlaying) {
     pauseSong();
   } else {
@@ -91,11 +79,6 @@ playBtn.addEventListener('click', () => {
 
 prevBtn.addEventListener('click', prevSong);
 nextBtn.addEventListener('click', nextSong);
-
 audio.addEventListener('timeupdate', updateProgress);
-
 progressContainer.addEventListener('click', setProgress);
-
 audio.addEventListener('ended', nextSong);
-
-audio.addEventListener('timeupdate',DurTime);
